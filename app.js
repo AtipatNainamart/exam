@@ -4,7 +4,7 @@
 
 const CONFIG = {
   // วาง Web App URL จาก Google Apps Script ที่นี่ (Deploy > Web app)
-  API_URL: 'https://script.google.com/macros/s/AKfycbzbr-C5MGa2LdJKFk0JIhkNrbtOL-cu18fE7_whJ1x1oyWDPgI8hr8-3QedPpS__DGZ/exec'
+  API_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'
 };
 
 const CLASS_COLORS = {
@@ -28,11 +28,9 @@ const appEl = document.getElementById('app');
 // ---------- Helpers: API ----------
 async function callApi(action, payload = {}) {
   try {
-    const res = await fetch(CONFIG.API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(Object.assign({ action }, payload))
-    });
+    const params = new URLSearchParams(Object.assign({ action }, payload));
+    const url = CONFIG.API_URL + '?' + params.toString();
+    const res = await fetch(url, { method: 'GET' });
     if (!res.ok) throw new Error('เครือข่ายขัดข้อง');
     return await res.json();
   } catch (err) {
