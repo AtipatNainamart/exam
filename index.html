@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจัดการการสอบ โรงเรียนศรีสุตาวิทยา</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #0F3D3E;
+    --forest-light: #16544f;
+    --gold: #E8C77E;
+    --gold-deep: #C9A455;
+    --cream: #FAF7F0;
+    --ink: #2D2A26;
+    --success: #4ADE80;
+    --danger: #DC2626;
+  }
+  * { font-family: 'Noto Sans Thai', sans-serif; }
+  body {
+    background: linear-gradient(135deg, #FAF7F0 0%, #F0E9D8 45%, #E8DCC0 100%);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .font-display { font-weight: 800; letter-spacing: -0.01em; }
+
+  .btn-primary {
+    background: var(--forest);
+    color: var(--cream);
+    transition: all .18s ease;
+  }
+  .btn-primary:hover { background: var(--forest-light); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--forest);
+    transition: all .18s ease;
+  }
+  .btn-gold:hover { background: var(--gold-deep); transform: translateY(-1px); }
+
+  .card-surface {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(15,61,62,0.08);
+  }
+
+  .input-field {
+    border: 1.5px solid #E2D9C4;
+    background: #fff;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: var(--forest);
+    box-shadow: 0 0 0 3px rgba(15,61,62,0.12);
+  }
+  .input-field.is-invalid {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.10);
+  }
+
+  .class-dot {
+    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+  }
+
+  .modal-backdrop {
+    background: rgba(15,30,30,0.45);
+    backdrop-filter: blur(2px);
+  }
+
+  .toast-success {
+    background: #ECFDF3;
+    border: 1px solid #6EE7A8;
+    color: #15803D;
+  }
+  .toast-error {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    color: #B91C1C;
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #D6CBB0; border-radius: 4px; }
+
+  @keyframes slideUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+  .animate-slide-up { animation: slideUp .35s ease forwards; }
+
+  @keyframes toastIn { from { opacity:0; transform: translateX(40px); } to { opacity:1; transform: translateX(0); } }
+  .animate-toast { animation: toastIn .3s ease forwards; }
+
+  .spinner {
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    width: 18px; height: 18px;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  table.data-table th { font-weight: 600; color: var(--forest); }
+  table.data-table tbody tr { transition: background .12s ease; }
+  table.data-table tbody tr:hover { background: rgba(15,61,62,0.04); }
+</style>
+</head>
+<body class="antialiased">
+
+<div id="app"></div>
+
+<!-- ====== TEMPLATE: หน้าแรก (Login Hub) ====== -->
+<template id="tpl-home">
+  <div class="min-h-screen flex flex-col items-center justify-center px-4 py-10">
+    <div class="text-center mb-8 animate-slide-up">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style="background: var(--forest);">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="#E8C77E" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.42A12.083 12.083 0 0118 18.5L12 22l-6-3.5a12.083 12.083 0 01-.16-7.92L12 14z"/>
+        </svg>
+      </div>
+      <h1 class="font-display text-2xl sm:text-3xl" style="color: var(--forest);">โรงเรียนศรีสุตาวิทยา</h1>
+      <p class="text-sm text-gray-500 mt-1">ระบบจัดการการสอบออนไลน์</p>
+    </div>
+
+    <div class="card-surface rounded-3xl shadow-xl w-full max-w-sm p-7 animate-slide-up">
+      <label class="block text-sm font-medium mb-2" style="color: var(--ink);">รหัสชั้นเรียนของคุณ</label>
+      <input id="classCodeInput" type="password" maxlength="4" placeholder="กรอกรหัสชั้นเรียน"
+        class="input-field w-full rounded-xl px-4 py-3.5 text-center text-lg tracking-widest mb-1.5">
+      <p id="classCodeError" class="text-xs text-red-500 mb-3 hidden">รหัสชั้นเรียนไม่ถูกต้อง</p>
+      <button id="btnStudentLogin" class="btn-primary w-full rounded-xl py-3.5 font-semibold text-base mt-2 flex items-center justify-center gap-2">
+        <span>เข้าสู่ระบบ</span>
+      </button>
+    </div>
+
+    <button id="btnShowStaffLogin" class="text-sm text-gray-500 hover:text-gray-700 mt-7 underline-offset-2 hover:underline transition">
+      สำหรับครูและผู้ดูแลระบบ
+    </button>
+  </div>
+</template>
+
+<!-- ====== TEMPLATE: Modal Login ครู/Admin ====== -->
+<template id="tpl-staff-modal">
+  <div class="fixed inset-0 modal-backdrop flex items-center justify-center px-4 z-50" id="staffModalBackdrop">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 animate-slide-up">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-display text-lg" style="color: var(--forest);">เข้าสู่ระบบ (ครู/ผู้ดูแลระบบ)</h2>
+        <button id="btnCloseStaffModal" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+      </div>
+      <label class="block text-xs font-medium text-gray-500 mb-1.5">ชื่อผู้ใช้</label>
+      <input id="staffUsername" type="text" placeholder="username"
+        class="input-field w-full rounded-xl px-4 py-3 mb-3.5">
+      <label class="block text-xs font-medium text-gray-500 mb-1.5">รหัสผ่าน</label>
+      <input id="staffPassword" type="password" placeholder="••••••••"
+        class="input-field w-full rounded-xl px-4 py-3 mb-1.5">
+      <p id="staffLoginError" class="text-xs text-red-500 mb-3 hidden">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>
+      <button id="btnStaffLogin" class="btn-primary w-full rounded-xl py-3 font-semibold mt-2 flex items-center justify-center gap-2">
+        <span>เข้าสู่ระบบ</span>
+      </button>
+    </div>
+  </div>
+</template>
+
+<!-- ====== TEMPLATE: หน้านักเรียน ====== -->
+<template id="tpl-student">
+  <div class="min-h-screen px-4 py-8 sm:py-10">
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-xs text-gray-500">ระดับชั้น</p>
+          <h1 class="font-display text-xl" style="color: var(--forest);" id="studentClassLevel"></h1>
+        </div>
+        <button id="btnLogoutStudent" class="text-sm text-gray-500 hover:text-red-500 flex items-center gap-1 transition">
+          ออกจากระบบ
+        </button>
+      </div>
+
+      <div class="card-surface rounded-3xl shadow-lg p-6 animate-slide-up">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="font-semibold text-base">รายวิชาที่สามารถเข้าสอบได้</h2>
+          <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: rgba(15,61,62,0.08); color: var(--forest);">
+            ทั้งหมด <span id="studentSubjectCount">0</span> วิชา
+          </span>
+        </div>
+        <div id="studentSubjectList" class="space-y-3"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ====== TEMPLATE: หน้าครู/Admin (Dashboard) ====== -->
+<template id="tpl-staff-dashboard">
+  <div class="min-h-screen px-4 py-8 sm:py-10">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <p class="text-xs text-gray-500" id="staffRoleLabel">ครูผู้สอน</p>
+          <h1 class="font-display text-xl" style="color: var(--forest);" id="staffFullName"></h1>
+        </div>
+        <button id="btnLogoutStaff" class="text-sm text-gray-500 hover:text-red-500 flex items-center gap-1 transition">
+          ออกจากระบบ
+        </button>
+      </div>
+
+      <!-- Card: สรุปจำนวน + ปุ่มเพิ่มข้อสอบ (เฉพาะหน้าครู/admin) -->
+      <div class="card-surface rounded-3xl shadow-lg p-6 mb-5 flex flex-wrap items-center justify-between gap-4 animate-slide-up">
+        <div>
+          <p class="text-xs text-gray-500 mb-1">จำนวนข้อสอบทั้งหมด</p>
+          <p class="font-display text-3xl" style="color: var(--forest);"><span id="staffSubjectCount">0</span> <span class="text-base font-medium text-gray-400">วิชา</span></p>
+        </div>
+        <button id="btnAddSubject" class="btn-gold rounded-xl px-5 py-3 font-semibold flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          เพิ่มข้อสอบใหม่
+        </button>
+      </div>
+
+      <!-- Card: ตาราง + Filter -->
+      <div class="card-surface rounded-3xl shadow-lg p-6 animate-slide-up">
+        <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+          <h2 class="font-semibold text-base">รายวิชาทั้งหมด</h2>
+          <div id="classFilterWrap" class="flex items-center gap-2">
+            <label class="text-xs text-gray-500">กรองตามชั้น:</label>
+            <select id="classFilter" class="input-field rounded-lg px-3 py-1.5 text-sm">
+              <option value="all">ทั้งหมด</option>
+              <option value="ม.1">ม.1</option>
+              <option value="ม.2">ม.2</option>
+              <option value="ม.3">ม.3</option>
+              <option value="ม.4">ม.4</option>
+              <option value="ม.5">ม.5</option>
+              <option value="ม.6">ม.6</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 text-left">
+                <th class="py-2.5 pr-3">ระดับชั้น</th>
+                <th class="py-2.5 pr-3">ชื่อวิชา</th>
+                <th class="py-2.5 pr-3" id="thTeacherCol">ครูประจำวิชา</th>
+                <th class="py-2.5 pr-3 text-right">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="staffSubjectTableBody"></tbody>
+          </table>
+          <p id="staffEmptyState" class="text-center text-sm text-gray-400 py-10 hidden">ยังไม่มีข้อมูลวิชาในขณะนี้</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ====== TEMPLATE: Modal เพิ่ม/แก้ไขวิชา ====== -->
+<template id="tpl-subject-modal">
+  <div class="fixed inset-0 modal-backdrop flex items-center justify-center px-4 z-50" id="subjectModalBackdrop">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-7 animate-slide-up">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-display text-lg" style="color: var(--forest);" id="subjectModalTitle">เพิ่มข้อสอบใหม่</h2>
+        <button id="btnCloseSubjectModal" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+      </div>
+
+      <label class="block text-xs font-medium text-gray-500 mb-1.5">ระดับชั้น</label>
+      <select id="subjectClassLevel" class="input-field w-full rounded-xl px-4 py-3 mb-1">
+        <option value="">-- เลือกระดับชั้น --</option>
+        <option value="ม.1" style="color:#0F3D3E">ม.1</option>
+        <option value="ม.2" style="color:#16544f">ม.2</option>
+        <option value="ม.3" style="color:#C9A455">ม.3</option>
+        <option value="ม.4" style="color:#B45309">ม.4</option>
+        <option value="ม.5" style="color:#7C2D12">ม.5</option>
+        <option value="ม.6" style="color:#991B1B">ม.6</option>
+      </select>
+      <p class="text-xs text-red-500 mb-3 hidden field-error" data-for="subjectClassLevel">กรุณาเลือกระดับชั้น</p>
+
+      <label class="block text-xs font-medium text-gray-500 mb-1.5">รายชื่อวิชา</label>
+      <input id="subjectName" type="text" placeholder="เช่น คณิตศาสตร์พื้นฐาน"
+        class="input-field w-full rounded-xl px-4 py-3 mb-1">
+      <p class="text-xs text-red-500 mb-3 hidden field-error" data-for="subjectName">กรุณากรอกรายชื่อวิชา</p>
+
+      <label class="block text-xs font-medium text-gray-500 mb-1.5">แนบลิงก์ข้อสอบ</label>
+      <input id="subjectExamLink" type="text" placeholder="https://forms.gle/..."
+        class="input-field w-full rounded-xl px-4 py-3 mb-1">
+      <p class="text-xs text-red-500 mb-3 hidden field-error" data-for="subjectExamLink">กรุณาแนบลิงก์ข้อสอบ</p>
+
+      <button id="btnSaveSubject" class="btn-primary w-full rounded-xl py-3 font-semibold mt-3 flex items-center justify-center gap-2">
+        <span>บันทึกข้อมูล</span>
+      </button>
+    </div>
+  </div>
+</template>
+
+<!-- ====== Toast container ====== -->
+<div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 items-end"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
