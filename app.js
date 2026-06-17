@@ -4,7 +4,7 @@
 
 const CONFIG = {
   // วาง Web App URL จาก Google Apps Script ที่นี่ (Deploy > Web app)
-  API_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'
+  API_URL: 'https://script.google.com/macros/s/AKfycbwxonhgR_HYClaqjMl4nVwYE4VsKnZB6i02AN5SEVSzoESYjRKRzrAwim9nDpeRsWC4/exec'
 };
 
 const CLASS_COLORS = {
