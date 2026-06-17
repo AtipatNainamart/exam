@@ -4,7 +4,7 @@
 
 const CONFIG = {
   // วาง Web App URL จาก Google Apps Script ที่นี่ (Deploy > Web app)
-  API_URL: 'https://script.google.com/macros/s/AKfycbwxonhgR_HYClaqjMl4nVwYE4VsKnZB6i02AN5SEVSzoESYjRKRzrAwim9nDpeRsWC4/exec'
+  API_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'
 };
 
 const CLASS_COLORS = {
@@ -63,6 +63,13 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+function escapeAttr(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function setLoading(btn, loading, labelWhenIdle) {
@@ -294,10 +301,11 @@ async function loadStaffSubjects() {
         <td class="py-3 pr-3 text-sm">${escapeHtml(s.subjectName)}</td>
         ${isAdmin ? `<td class="py-3 pr-3 text-sm text-gray-600">${escapeHtml(s.teacherFullName || '-')}</td>` : ''}
         <td class="py-3 pr-3 text-right whitespace-nowrap">
+          <button class="text-xs font-medium text-gray-500 hover:text-emerald-600 mr-3 transition" onclick="checkExamLink('${escapeAttr(s.examLink)}')">ตรวจสอบ</button>
           ${canEdit ? `
             <button class="text-xs font-medium text-gray-500 hover:text-amber-600 mr-3 transition" onclick="openSubjectModal('${s.id}')">แก้ไข</button>
             <button class="text-xs font-medium text-gray-500 hover:text-red-600 transition" onclick="confirmDeleteSubject('${s.id}')">ลบ</button>
-          ` : `<span class="text-xs text-gray-300">-</span>`}
+          ` : ''}
         </td>
       </tr>
     `;
@@ -393,6 +401,15 @@ async function openSubjectModal(subjectId) {
   }
 
   saveBtn.addEventListener('click', handleSave);
+}
+
+// ---------- ตรวจสอบลิงก์ข้อสอบ ----------
+function checkExamLink(examLink) {
+  if (!examLink) {
+    showToast('ไม่พบลิงก์ข้อสอบสำหรับวิชานี้', 'error');
+    return;
+  }
+  window.open(examLink, '_blank', 'noopener');
 }
 
 // ---------- ลบวิชา ----------
